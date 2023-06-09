@@ -144,6 +144,20 @@ async function run() {
             res.send(result);
         })
 
+        // find instructor classes
+        app.get("/instructor/classes", async(req, res)=>{
+            const email = req.query.email;
+            console.log(email);
+            if (!email) {
+                res.send([]);
+            }
+            else {
+                const query = { instructorEmail: email };
+                const result = await classCollection.find(query).toArray();
+                res.send(result);
+            }
+        })
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
