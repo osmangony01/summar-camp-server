@@ -54,6 +54,8 @@ async function run() {
 
         const userCollection = client.db('summarCamp').collection('users');
         const classCollection = client.db('summarCamp').collection('class');
+        const selectedClassCollection = client.db('summarCamp').collection('selectedClass');
+        const enrolledClassCollection = client.db('summarCamp').collection('enrolledClass');
 
 
         // add user in database
@@ -180,9 +182,17 @@ async function run() {
         })
 
         // get approved classes
-        app.get("/approved-classes", async(req, res)=>{
+        app.get("/approved-classes", async (req, res) => {
             const query = { status: "approved" };
             const result = await classCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        // save selected class for student
+        app.post("/save-selected-class", async (req, res) => {
+            const selectedClass = req.body;
+            console.log(selectedClass);
+            const result = await selectedClassCollection.insertOne(selectedClass);
             res.send(result);
         })
 
