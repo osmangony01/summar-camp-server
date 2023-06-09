@@ -145,7 +145,7 @@ async function run() {
         })
 
         // find instructor classes
-        app.get("/instructor/classes", async(req, res)=>{
+        app.get("/instructor/classes", async (req, res) => {
             const email = req.query.email;
             console.log(email);
             if (!email) {
@@ -156,6 +156,12 @@ async function run() {
                 const result = await classCollection.find(query).toArray();
                 res.send(result);
             }
+        })
+
+        // show all classes
+        app.get("/all-classes", async (req, res) => {
+            const result = await classCollection.find().toArray();
+            res.send(result);
         })
 
 
