@@ -79,7 +79,7 @@ async function run() {
         // get specific user
         app.get("/user", async (req, res) => {
             const email = req.query.email;
-            console.log('email: ',email);
+            console.log('email: ', email);
             if (email) {
                 const query = { email: email };
                 const result = await userCollection.findOne(query);
@@ -122,7 +122,7 @@ async function run() {
         //     res.send(result)
         // })
         app.patch("/user-role/", async (req, res) => {
-            const id =req.body.id;
+            const id = req.body.id;
             const roleName = req.body.name;
             console.log(id, roleName);
             const filter = { _id: new ObjectId(id) };
@@ -136,7 +136,13 @@ async function run() {
         })
 
 
-        
+        // insert class 
+        app.post("/addclass", async (req, res) => {
+            const saveClass = req.body;
+            //console.log(saveClass);
+            const result = await classCollection.insertOne(saveClass);
+            res.send(result);
+        })
 
 
         await client.db("admin").command({ ping: 1 });
