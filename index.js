@@ -53,8 +53,10 @@ async function run() {
         // Send a ping to confirm a successful connection
 
         const userCollection = client.db('summarCamp').collection('users');
+        const classCollection = client.db('summarCamp').collection('class');
 
 
+        // add user in database
         app.post("/users", async (req, res) => {
             const user = req.body;
             //console.log(user);
@@ -68,9 +70,25 @@ async function run() {
             res.send(result);
         })
 
+        // get all users
         app.get("/users", verifyJWT, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
+        })
+
+        // get specific user
+        app.get("/user", async (req, res) => {
+            const email = req.query.email;
+            console.log('email: ',email);
+            if (email) {
+                const query = { email: email };
+                const result = await userCollection.findOne(query);
+                console.log(result)
+                res.send(result);
+            }
+            else {
+                res.send([]);
+            }
         })
 
         // jwt token
@@ -92,18 +110,33 @@ async function run() {
         })
 
         // update user role as a admin or instructor
-        app.patch("/user-role/:id", async(req, res)=>{
-            const id = req.params.id;
-            const filter= {_id: new ObjectId(id)};
-            const updateDoc ={
-                $set:{
-                    role: 'admin'
+        // app.patch("/user-role/:id", async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: new ObjectId(id) };
+        //     const updateDoc = {
+        //         $set: {
+        //             role: 'admin'
+        //         }
+        //     }
+        //     const result = await userCollection.updateOne(filter, updateDoc);
+        //     res.send(result)
+        // })
+        app.patch("/user-role/", async (req, res) => {
+            const id =req.body.id;
+            const roleName = req.body.name;
+            console.log(id, roleName);
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: roleName
                 }
             }
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result)
         })
 
+
+        
 
 
         await client.db("admin").command({ ping: 1 });
