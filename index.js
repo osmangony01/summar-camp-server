@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
+
 app.get("/", (req, res) => {
     res.send("Summar Camp is running...")
 })
@@ -197,7 +199,7 @@ async function run() {
         })
 
         // get user booked classes
-        app.get("/booked-classes", async(req, res)=>{
+        app.get("/booked-classes", async (req, res) => {
             const email = req.query.email;
             // //console.log(user);
             const query = { studentEmail: email };
@@ -207,6 +209,82 @@ async function run() {
             //     return res.send({ message: 'user already exists' });
             // }
             // const result = await userCollection.insertOne(user);
+            res.send(result);
+        })
+
+        app.get("/booked-class/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await selectedClassCollection.findOne(query);
+            console.log(id);
+            res.send(result);
+        })
+
+
+        // create payment intent
+        app.post("/create-payment-intent", async (req, res) => {
+            const { price } = req.body;
+            const amount = price * 100;
+            console.log(price, amount);
+
+            // Create a PaymentIntent with the order amount and currency
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                automatic_payment_methods: {
+                    enabled: true,
+                },
+            });
+
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+
+        // payment
+        app.post("/payment", async (req, res) => {
+            const enrolledClass = req.body;
+            console.log(enrolledClass);
+
+            const selectedClassId = enrolledClass.selectedClassId;
+            const classId = enrolledClass.classId;
+
+            // delete selected class
+            const query1 = { _id: new ObjectId(selectedClassId) };
+            const deleteClass = await selectedClassCollection.deleteOne(query1);
+
+            // find class
+            const query2 = { _id: new ObjectId(classId) };
+            const findClass = await classCollection.findOne(query2);
+
+            // update enroll, available seats of a class 
+            if (findClass) {
+                const enrollStudent = parseInt(findClass.enrollStudent);
+                const newEnrollStudent = enrollStudent + 1;
+
+                const availableSeats = parseInt(findClass.availableSeat);
+                const newAvailableSeats = availableSeats - 1;
+
+                const updateDoc = {
+                    $set: {
+                        enrollStudent: newEnrollStudent,
+                        availableSeat: newAvailableSeats
+                    }
+                }
+                const result = await classCollection.updateOne(query2, updateDoc);
+            }
+
+
+            const result = await enrolledClassCollection.insertOne(enrolledClass);
+            res.send(result);
+        })
+
+
+        // get enrolled classes
+        app.get("/enrolled-classes", async (req, res) => {
+            const email = req.query.email;
+            const filter = { studentEmail: email };
+            const result = await enrolledClassCollection.find(filter).toArray();
             res.send(result);
         })
 
