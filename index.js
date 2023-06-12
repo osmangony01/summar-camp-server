@@ -19,14 +19,14 @@ app.get("/", (req, res) => {
 })
 
 const verifyJWT = (req, res, next) => {
-    console.log('hiting verify jwt')
-    console.log(req.headers.authorization);
+    //console.log('hiting verify jwt')
+    //console.log(req.headers.authorization);
     const authorization = req.headers.authorization;
     if (!authorization) {
         return res.status(401).send({ error: true, message: 'unauthorized access' })
     }
     const token = authorization.split(' ')[1];
-    console.log('token', token);
+    //console.log('token', token);
     jwt.verify(token, process.env.ACCESS_TOKEN, (error, decoded) => {
         if (error) {
             return res.status(403).send({ error: true, message: 'unauthorized access' });
@@ -54,7 +54,7 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        client.connect();
         // Send a ping to confirm a successful connection
 
         const userCollection = client.db('summarCamp').collection('users');
@@ -86,11 +86,11 @@ async function run() {
         // get specific user
         app.get("/user", async (req, res) => {
             const email = req.query.email;
-            console.log('email: ', email);
+            //console.log('email: ', email);
             if (email) {
                 const query = { email: email };
                 const result = await userCollection.findOne(query);
-                console.log(result)
+                //console.log(result)
                 res.send(result);
             }
             else {
@@ -101,7 +101,7 @@ async function run() {
         // jwt token
         app.post("/jwt", (req, res) => {
             const user = req.body;
-            console.log(user);
+            //console.log(user);
             const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
             res.send({ token });
         })
@@ -112,26 +112,16 @@ async function run() {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await userCollection.deleteOne(query);
-            console.log(id);
+            //console.log(id);
             res.send(result);
         })
 
-        // update user role as a admin or instructor
-        // app.patch("/user-role/:id", async (req, res) => {
-        //     const id = req.params.id;
-        //     const filter = { _id: new ObjectId(id) };
-        //     const updateDoc = {
-        //         $set: {
-        //             role: 'admin'
-        //         }
-        //     }
-        //     const result = await userCollection.updateOne(filter, updateDoc);
-        //     res.send(result)
-        // })
+       
+        // update role by admin
         app.patch("/user-role/", async (req, res) => {
             const id = req.body.id;
             const roleName = req.body.name;
-            console.log(id, roleName);
+            //console.log(id, roleName);
             const filter = { _id: new ObjectId(id) };
             const updateDoc = {
                 $set: {
@@ -154,7 +144,7 @@ async function run() {
         // find instructor classes
         app.get("/instructor/classes", async (req, res) => {
             const email = req.query.email;
-            console.log(email);
+            //console.log(email);
             if (!email) {
                 res.send([]);
             }
@@ -175,7 +165,7 @@ async function run() {
         app.patch("/update-status", async (req, res) => {
             const id = req.body.id;
             const updatedStatus = req.body.status;
-            console.log(id, updatedStatus);
+            //console.log(id, updatedStatus);
             const filter = { _id: new ObjectId(id) };
             const updateDoc = {
                 $set: {
@@ -196,7 +186,7 @@ async function run() {
         // save selected class for student
         app.post("/save-selected-class", async (req, res) => {
             const selectedClass = req.body;
-            console.log(selectedClass);
+            //console.log(selectedClass);
             const result = await selectedClassCollection.insertOne(selectedClass);
             res.send(result);
         })
@@ -207,11 +197,6 @@ async function run() {
             // //console.log(user);
             const query = { studentEmail: email };
             const result = await selectedClassCollection.find(query).toArray();
-            // //console.log(existingUser);
-            // if (existingUser) {
-            //     return res.send({ message: 'user already exists' });
-            // }
-            // const result = await userCollection.insertOne(user);
             res.send(result);
         })
 
@@ -219,7 +204,7 @@ async function run() {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await selectedClassCollection.findOne(query);
-            console.log(id);
+            //console.log(id);
             res.send(result);
         })
 
@@ -228,7 +213,7 @@ async function run() {
         app.post("/create-payment-intent", async (req, res) => {
             const { price } = req.body;
             const amount = price * 100;
-            console.log(price, amount);
+            //console.log(price, amount);
 
             // Create a PaymentIntent with the order amount and currency
             const paymentIntent = await stripe.paymentIntents.create({
@@ -247,7 +232,7 @@ async function run() {
         // payment
         app.post("/payment", async (req, res) => {
             const enrolledClass = req.body;
-            console.log(enrolledClass);
+            //console.log(enrolledClass);
 
             const selectedClassId = enrolledClass.selectedClassId;
             const classId = enrolledClass.classId;
@@ -277,7 +262,6 @@ async function run() {
                 const result = await classCollection.updateOne(query2, updateDoc);
             }
 
-
             const result = await enrolledClassCollection.insertOne(enrolledClass);
             res.send(result);
         })
@@ -296,7 +280,7 @@ async function run() {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await selectedClassCollection.deleteOne(query);
-            console.log(id);
+            //console.log(id);
             res.send(result);
         })
 
@@ -305,7 +289,7 @@ async function run() {
         app.patch('/give-feedback', async(req, res)=>{
             const id = req.body.id;
             const feedback = req.body.fk;
-            console.log(id, feedback);
+            //console.log(id, feedback);
             const query = { _id: new ObjectId(id) };
             const updateDoc = {
                 $set: {
