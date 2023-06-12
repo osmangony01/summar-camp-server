@@ -36,6 +36,9 @@ const verifyJWT = (req, res, next) => {
     })
 }
 
+const isAdmin = ()=>{
+
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.l6kpz6n.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -295,6 +298,23 @@ async function run() {
             const result = await selectedClassCollection.deleteOne(query);
             console.log(id);
             res.send(result);
+        })
+
+
+        // give feedback 
+        app.patch('/give-feedback', async(req, res)=>{
+            const id = req.body.id;
+            const feedback = req.body.fk;
+            console.log(id, feedback);
+            const query = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    feedbacks: feedback,
+                }
+            }
+            const result = await classCollection.updateOne(query, updateDoc);
+            res.send(result)
+
         })
 
 
